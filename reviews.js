@@ -1,6 +1,5 @@
 // ===============================
 // Customer Reviews Data
-// KeyTop Fresh
 // ===============================
 
 const reviews = [
@@ -21,3 +20,30 @@ const reviews = [
         author: "Michael T."
     }
 ];
+
+// ===============================
+// Reviews Slider
+// ===============================
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const textElement = document.getElementById("review-text");
+    const authorElement = document.getElementById("review-author");
+
+    if (!textElement || !authorElement) return;
+
+    let currentIndex = 0;
+
+    function showReview(index) {
+        textElement.textContent = `"${reviews[index].text}"`;
+        authorElement.textContent = `- ${reviews[index].author}`;
+    }
+
+    function nextReview() {
+        currentIndex = (currentIndex + 1) % reviews.length;
+        showReview(currentIndex);
+    }
+
+    showReview(currentIndex);
+    setInterval(nextReview, 4000);
+});
