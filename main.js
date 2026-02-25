@@ -13,6 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const totalItemsElement = document.getElementById("total-items");
     const totalPriceElement = document.getElementById("total-price");
     const checkoutBtn = document.querySelector(".checkout-btn");
+    const customerForm = document.querySelector(".customer-form");
 
     // ===============================
     // STORAGE
@@ -90,7 +91,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const name = button.dataset.name;
             const price = parseFloat(button.dataset.price);
 
-            // ICE CREAM
             if (name === "Vanilla Dream") {
 
                 const sauce = prompt(
@@ -99,19 +99,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 let addons = [];
 
-                if (sauce === "1") {
-                    addons.push({ name: "Chocolate Sauce", price: 1 });
-                }
-
-                if (sauce === "2") {
-                    addons.push({ name: "Pistachio Sauce", price: 2 });
-                }
+                if (sauce === "1") addons.push({ name: "Chocolate Sauce", price: 1 });
+                if (sauce === "2") addons.push({ name: "Pistachio Sauce", price: 2 });
 
                 addToCart(name, price, addons);
                 return;
             }
 
-            // FRUIT SALAD
             if (name === "Tropical Mix") {
 
                 const extra = prompt(
@@ -120,19 +114,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 let addons = [];
 
-                if (extra === "1") {
-                    addons.push({ name: "Whipped Cream", price: 1 });
-                }
-
-                if (extra === "2") {
-                    addons.push({ name: "Extra Fruits", price: 2 });
-                }
+                if (extra === "1") addons.push({ name: "Whipped Cream", price: 1 });
+                if (extra === "2") addons.push({ name: "Extra Fruits", price: 2 });
 
                 addToCart(name, price, addons);
                 return;
             }
 
-            // NORMAL PRODUCTS
             addToCart(name, price);
         });
     });
@@ -184,9 +172,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (item.addons && item.addons.length > 0) {
                 addonsHTML = `
                     <ul class="addon-list">
-                        ${item.addons
-                            .map(addon => `<li>+ ${addon.name}</li>`)
-                            .join("")}
+                        ${item.addons.map(addon => `<li>+ ${addon.name}</li>`).join("")}
                     </ul>
                 `;
             }
@@ -259,60 +245,60 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function updateSummary() {
 
-    const cart = getCart();
+        const cart = getCart();
 
-    let totalItems = 0;
-    let subtotal = 0;
+        let totalItems = 0;
+        let subtotal = 0;
 
-    cart.forEach(item => {
-        totalItems += item.quantity;
-        subtotal += item.price * item.quantity;
-    });
+        cart.forEach(item => {
+            totalItems += item.quantity;
+            subtotal += item.price * item.quantity;
+        });
 
-    const taxRate = 0.15;
-    const tax = subtotal * taxRate;
-    const total = subtotal + tax;
+        const taxRate = 0.15;
+        const tax = subtotal * taxRate;
+        const total = subtotal + tax;
 
-    // Update items count
-    if (totalItemsElement) {
-        totalItemsElement.textContent = totalItems;
+        if (totalItemsElement) totalItemsElement.textContent = totalItems;
+
+        const subtotalElement = document.getElementById("subtotal-amount");
+        const taxElement = document.getElementById("tax-amount");
+
+        if (subtotalElement) subtotalElement.textContent = subtotal.toFixed(2);
+        if (taxElement) taxElement.textContent = tax.toFixed(2);
+        if (totalPriceElement) totalPriceElement.textContent = total.toFixed(2);
     }
-
-    // Update subtotal
-    const subtotalElement = document.getElementById("subtotal-amount");
-    if (subtotalElement) {
-        subtotalElement.textContent = subtotal.toFixed(2);
-    }
-
-    // Update tax
-    const taxElement = document.getElementById("tax-amount");
-    if (taxElement) {
-        taxElement.textContent = tax.toFixed(2);
-    }
-
-    // Update final total
-    if (totalPriceElement) {
-        totalPriceElement.textContent = total.toFixed(2);
-    }
-}
 
     // ===============================
-    // CHECKOUT
+    // COMPLETE ORDER (CUSTOMER FORM)
     // ===============================
 
-    if (checkoutBtn) {
-        checkoutBtn.addEventListener("click", () => {
+    if (customerForm) {
 
-            if (getCart().length === 0) {
-                showPopup("Your cart is empty.");
+        customerForm.addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            const name = document.getElementById("name").value.trim();
+            const phone = document.getElementById("phone").value.trim();
+            const address = document.getElementById("address").value.trim();
+
+            if (!name || !phone || !address) {
+                showPopup("Please fill in all required fields.");
                 return;
             }
 
-            showPopup("Thank you for your order!");
             localStorage.removeItem("cart");
 
+            if (cartContainer) cartContainer.innerHTML = "";
+
             updateCartCounter();
-            loadCart();
+            updateSummary();
+
+            const orderLayout = document.querySelector(".order-layout");
+            if (orderLayout) orderLayout.style.display = "none";
+
+            const successMessage = document.getElementById("success-message");
+            if (successMessage) successMessage.style.display = "flex";
         });
     }
 
@@ -336,8 +322,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // ===============================
     // INIT
     // ===============================
-
+    
     updateCartCounter();
     loadCart();
 });
-
