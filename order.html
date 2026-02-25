@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Order | KeyTop Fresh</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<!-- ================= HEADER ================= -->
+<header class="navbar">
+    <div class="container nav-wrapper">
+
+        <img src="images/logo-header.jpg" alt="KeyTop Fresh Logo" class="logo">
+
+        <nav>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="menu.html">Menu</a></li>
+                <li><a href="order.html">Order</a></li>
+                <li><a href="about.html">About</a></li>
+            </ul>
+        </nav>
+
+        <div class="cart-icon">
+            <a href="order.html">
+                🛒 <span id="cart-count" class="cart-count">0</span>
+            </a>
+        </div>
+
+    </div>
+</header>
+
+<!-- ================= HERO ================= -->
+<section class="menu-hero">
+    <div class="container">
+        <h1>Your Order</h1>
+        <p>Review your items before checkout.</p>
+    </div>
+</section>
+
+<!-- ================= MAIN ================= -->
+<main class="container order-page">
+
+    <div class="order-layout">
+
+        <!-- Cart Items -->
+        <section class="cart-section">
+            <h2>Cart Items</h2>
+            <div id="cart-items"></div>
+        </section>
+
+        <!-- Summary -->
+        <aside class="summary-section">
+            <h2>Order Summary</h2>
+
+            <div class="summary-box">
+                <p>Total Items: <span id="total-items">0</span></p>
+                <p>Subtotal: $<span id="subtotal-amount">0.00</span></p>
+                <p>Tax (15%): $<span id="tax-amount">0.00</span></p>
+                <hr>
+                <p><strong>Total: $<span id="total-price">0.00</span></strong></p>
+                <button class="checkout-btn">Proceed to Checkout</button>
+            </div>
+
+        </aside>
+
+    </div>
+
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer class="footer">
+    <p>© 2026 KeyTop Fresh. All Rights Reserved.</p>
+</footer>
+
+<script src="reviews.js"></script>
+<script src="main.js"></script>
+
+</body>
+</html>
