@@ -4,6 +4,10 @@
 
 const reviews = [
     {
+        text: "It's good value for money. Taste of ice creams are OK but having good serving size in the price they offer.",
+        author: "Feras Zen."
+    },
+    {
         text: "Absolutely the freshest juice I've ever had! The mango blend is incredible.",
         author: "Emily R."
     },
