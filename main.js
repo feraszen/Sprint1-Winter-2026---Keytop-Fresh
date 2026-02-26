@@ -16,14 +16,42 @@ document.addEventListener("DOMContentLoaded", () => {
     const calculateBtn = document.getElementById("calculate-btn");
 
     // ===============================
-    // STORAGE FUNCTIONS
+    // STORAGE
     // ===============================
 
-    const getCart = () => JSON.parse(localStorage.getItem("cart")) || [];
-    const saveCart = (cart) => localStorage.setItem("cart", JSON.stringify(cart));
+    function getCart() {
+        return JSON.parse(localStorage.getItem("cart")) || [];
+    }
 
-    const getOrders = () => JSON.parse(localStorage.getItem("orders")) || [];
-    const saveOrders = (orders) => localStorage.setItem("orders", JSON.stringify(orders));
+    function saveCart(cart) {
+        localStorage.setItem("cart", JSON.stringify(cart));
+    }
+
+    function getOrders() {
+        return JSON.parse(localStorage.getItem("orders")) || [];
+    }
+
+    function saveOrders(orders) {
+        localStorage.setItem("orders", JSON.stringify(orders));
+    }
+
+    // ===============================
+    // IMAGE MAPPING
+    // ===============================
+
+    function getImageName(name) {
+        const images = {
+            "Orange Boost": "orange-juice.jpg",
+            "Mango Delight": "mango-juice.jpg",
+            "Strawberry Fresh": "Strawberry-juice.jpg",
+            "Watermelon Chill": "watermelon-juice.jpg",
+            "Strawberry Banana Milkshake": "milkshake-cocktail-juice.jpg",
+            "Kiwi Vital Smoothie": "kiwi-juice.jpg",
+            "Tropical Mix": "fruit-salad.jpg",
+            "Vanilla Dream": "ice-cream.jpg"
+        };
+        return images[name] || "orange-juice.jpg";
+    }
 
     // ===============================
     // UPDATE CART COUNTER
@@ -38,12 +66,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (animate) {
             cartCountElement.classList.add("cart-bounce");
-            setTimeout(() => cartCountElement.classList.remove("cart-bounce"), 400);
+            setTimeout(() => {
+                cartCountElement.classList.remove("cart-bounce");
+            }, 400);
         }
     }
 
     // ===============================
-    // ADD TO CART
+    // ADD TO CART WITH ADDONS
     // ===============================
 
     function addToCart(name, basePrice, addons = []) {
@@ -61,41 +91,51 @@ document.addEventListener("DOMContentLoaded", () => {
         if (existingItem) {
             existingItem.quantity += 1;
         } else {
-            cart.push({ name, price: finalPrice, quantity: 1, addons });
+            cart.push({
+                name,
+                price: finalPrice,
+                quantity: 1,
+                addons
+            });
         }
 
         saveCart(cart);
         updateCartCounter(true);
-        showPopup(`${name} added to cart!`);
+        showPopup(name + " added to cart!");
     }
 
     // ===============================
     // ADD BUTTON EVENTS
     // ===============================
 
-    document.querySelectorAll(".add-to-cart").forEach(button => {
+    const addButtons = document.querySelectorAll(".add-to-cart");
+
+    addButtons.forEach(button => {
 
         button.addEventListener("click", () => {
 
             const name = button.dataset.name;
             const price = parseFloat(button.dataset.price);
-
-            if (!name || !price) return;
-
             let addons = [];
 
+            // Ice Cream Addons
             if (name === "Vanilla Dream") {
+
                 const sauce = prompt(
-                    "Choose sauce:\n1 - Chocolate (+$1)\n2 - Pistachio (+$2)\n0 - None"
+                    "Choose sauce:\n1 - Chocolate Sauce (+$1)\n2 - Pistachio Sauce (+$2)\n0 - No Sauce"
                 );
+
                 if (sauce === "1") addons.push({ name: "Chocolate Sauce", price: 1 });
                 if (sauce === "2") addons.push({ name: "Pistachio Sauce", price: 2 });
             }
 
+            // Fruit Salad Addons
             if (name === "Tropical Mix") {
+
                 const extra = prompt(
                     "Add extras?\n1 - Whipped Cream (+$1)\n2 - Extra Fruits (+$2)\n0 - None"
                 );
+
                 if (extra === "1") addons.push({ name: "Whipped Cream", price: 1 });
                 if (extra === "2") addons.push({ name: "Extra Fruits", price: 2 });
             }
@@ -105,7 +145,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // ===============================
-    // LOAD CART
+    // LOAD CART WITH IMAGES + ADDONS
     // ===============================
 
     function loadCart() {
@@ -126,11 +166,29 @@ document.addEventListener("DOMContentLoaded", () => {
             const itemDiv = document.createElement("div");
             itemDiv.classList.add("cart-item");
 
+            let addonsHTML = "";
+
+            if (item.addons && item.addons.length > 0) {
+                addonsHTML = `
+                    <ul class="addon-list">
+                        ${item.addons.map(addon => `<li>+ ${addon.name}</li>`).join("")}
+                    </ul>
+                `;
+            }
+
             itemDiv.innerHTML = `
+                <div class="cart-left">
+                    <img src="images/${getImageName(item.name)}" alt="${item.name}">
+                </div>
+
                 <div class="cart-right">
                     <h4>${item.name}</h4>
-                    <p>$${item.price.toFixed(2)}</p>
-                    <input type="number" min="1" value="${item.quantity}" data-index="${index}" class="quantity-input">
+                    ${addonsHTML}
+                    <p class="item-price">$${item.price.toFixed(2)}</p>
+
+                    <input type="number" min="1" value="${item.quantity}" 
+                        data-index="${index}" class="quantity-input">
+
                     <button data-index="${index}" class="remove-btn">Remove</button>
                 </div>
             `;
@@ -142,6 +200,10 @@ document.addEventListener("DOMContentLoaded", () => {
         updateSummary();
     }
 
+    // ===============================
+    // CART EVENTS
+    // ===============================
+
     function attachCartEvents() {
 
         document.querySelectorAll(".quantity-input").forEach(input => {
@@ -150,7 +212,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 const index = e.target.dataset.index;
                 let cart = getCart();
 
-                cart[index].quantity = Math.max(1, parseInt(e.target.value));
+                let newQuantity = parseInt(e.target.value);
+                if (newQuantity < 1) newQuantity = 1;
+
+                cart[index].quantity = newQuantity;
                 saveCart(cart);
 
                 updateCartCounter();
@@ -177,7 +242,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // UPDATE SUMMARY
     // ===============================
 
-    function calculateTotals() {
+    function updateSummary() {
 
         const cart = getCart();
 
@@ -189,15 +254,9 @@ document.addEventListener("DOMContentLoaded", () => {
             subtotal += item.price * item.quantity;
         });
 
-        const tax = subtotal * 0.15;
+        const taxRate = 0.15;
+        const tax = subtotal * taxRate;
         const total = subtotal + tax;
-
-        return { totalItems, subtotal, tax, total };
-    }
-
-    function updateSummary() {
-
-        const { totalItems, subtotal, tax, total } = calculateTotals();
 
         if (totalItemsElement) totalItemsElement.textContent = totalItems;
 
@@ -214,7 +273,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // ===============================
 
     if (calculateBtn) {
-        calculateBtn.addEventListener("click", () => {
+        calculateBtn.addEventListener("click", function () {
 
             if (getCart().length === 0) {
                 showPopup("Your cart is empty.");
@@ -227,12 +286,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ===============================
-    // COMPLETE ORDER
+    // COMPLETE ORDER + SAVE
     // ===============================
 
     if (customerForm) {
 
-        customerForm.addEventListener("submit", (e) => {
+        customerForm.addEventListener("submit", function (e) {
             e.preventDefault();
 
             const name = document.getElementById("name").value.trim();
@@ -251,17 +310,18 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            const totals = calculateTotals();
             const orders = getOrders();
 
-            orders.push({
+            const newOrder = {
                 customer: { name, phone, address, instructions },
                 items: cart,
-                total: totals.total.toFixed(2),
+                total: document.getElementById("total-price").textContent,
                 date: new Date().toLocaleString()
-            });
+            };
 
+            orders.push(newOrder);
             saveOrders(orders);
+
             localStorage.removeItem("cart");
 
             loadCart();
@@ -284,7 +344,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         document.body.appendChild(popup);
 
-        setTimeout(() => popup.remove(), 2000);
+        setTimeout(() => {
+            popup.remove();
+        }, 2000);
     }
 
     // ===============================
