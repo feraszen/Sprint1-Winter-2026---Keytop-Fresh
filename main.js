@@ -12,8 +12,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const cartContainer = document.getElementById("cart-items");
     const totalItemsElement = document.getElementById("total-items");
     const totalPriceElement = document.getElementById("total-price");
-    const checkoutBtn = document.querySelector(".checkout-btn");
     const customerForm = document.querySelector(".customer-form");
+    const calculateBtn = document.getElementById("calculate-btn");
 
     // ===============================
     // STORAGE
@@ -79,7 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ===============================
-    // BUTTON EVENTS
+    // BUTTON EVENTS (ADD TO CART)
     // ===============================
 
     const addButtons = document.querySelectorAll(".add-to-cart");
@@ -270,7 +270,24 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ===============================
-    // COMPLETE ORDER (CUSTOMER FORM)
+    // CALCULATE TOTAL BUTTON
+    // ===============================
+
+    if (calculateBtn) {
+        calculateBtn.addEventListener("click", function () {
+
+            if (getCart().length === 0) {
+                showPopup("Your cart is empty.");
+                return;
+            }
+
+            updateSummary();
+            showPopup("Total calculated successfully!");
+        });
+    }
+
+    // ===============================
+    // COMPLETE ORDER
     // ===============================
 
     if (customerForm) {
@@ -322,7 +339,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // ===============================
     // INIT
     // ===============================
-    
+
     updateCartCounter();
     loadCart();
 });
