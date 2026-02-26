@@ -36,6 +36,25 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ===============================
+    // INVOICE NUMBER GENERATOR
+    // ===============================
+
+    function getInvoiceNumber() {
+
+        let counter = localStorage.getItem("invoiceCounter");
+
+        if (!counter) {
+            counter = 100;
+        } else {
+            counter = parseInt(counter) + 1;
+        }
+
+        localStorage.setItem("invoiceCounter", counter);
+
+        return "KT" + String(counter).padStart(6, "0");
+    }
+
+    // ===============================
     // IMAGE MAPPING
     // ===============================
 
@@ -118,9 +137,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const price = parseFloat(button.dataset.price);
             let addons = [];
 
-            // Ice Cream Addons
             if (name === "Vanilla Dream") {
-
                 const sauce = prompt(
                     "Choose sauce:\n1 - Chocolate Sauce (+$1)\n2 - Pistachio Sauce (+$2)\n0 - No Sauce"
                 );
@@ -129,9 +146,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (sauce === "2") addons.push({ name: "Pistachio Sauce", price: 2 });
             }
 
-            // Fruit Salad Addons
             if (name === "Tropical Mix") {
-
                 const extra = prompt(
                     "Add extras?\n1 - Whipped Cream (+$1)\n2 - Extra Fruits (+$2)\n0 - None"
                 );
@@ -145,7 +160,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // ===============================
-    // LOAD CART WITH IMAGES + ADDONS
+    // LOAD CART
     // ===============================
 
     function loadCart() {
@@ -199,10 +214,6 @@ document.addEventListener("DOMContentLoaded", () => {
         attachCartEvents();
         updateSummary();
     }
-
-    // ===============================
-    // CART EVENTS
-    // ===============================
 
     function attachCartEvents() {
 
@@ -260,33 +271,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (totalItemsElement) totalItemsElement.textContent = totalItems;
 
-        const subtotalElement = document.getElementById("subtotal-amount");
-        const taxElement = document.getElementById("tax-amount");
-
-        if (subtotalElement) subtotalElement.textContent = subtotal.toFixed(2);
-        if (taxElement) taxElement.textContent = tax.toFixed(2);
-        if (totalPriceElement) totalPriceElement.textContent = total.toFixed(2);
+        document.getElementById("subtotal-amount").textContent = subtotal.toFixed(2);
+        document.getElementById("tax-amount").textContent = tax.toFixed(2);
+        totalPriceElement.textContent = total.toFixed(2);
     }
 
-    // ===============================
-    // CALCULATE BUTTON
-    // ===============================
-
-    if (calculateBtn) {
-        calculateBtn.addEventListener("click", function () {
-
-            if (getCart().length === 0) {
-                showPopup("Your cart is empty.");
-                return;
-            }
-
-            updateSummary();
-            showPopup("Total calculated successfully!");
-        });
-    }
 
     // ===============================
-    // COMPLETE ORDER + SAVE
+    // COMPLETE ORDER + INVOICE
     // ===============================
 
     if (customerForm) {
@@ -311,24 +303,75 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             const orders = getOrders();
+            const invoiceNumber = getInvoiceNumber();
+
+            // Calculate subtotal & tax again for invoice
+            let subtotal = 0;
+
+            cart.forEach(item => {
+                subtotal += item.price * item.quantity;
+            });
+
+            const taxRate = 0.15;
+            const tax = subtotal * taxRate;
+            const total = subtotal + tax;
 
             const newOrder = {
+                invoice: invoiceNumber,
                 customer: { name, phone, address, instructions },
                 items: cart,
-                total: document.getElementById("total-price").textContent,
+                subtotal: subtotal.toFixed(2),
+                tax: tax.toFixed(2),
+                total: total.toFixed(2),
                 date: new Date().toLocaleString()
-            };
+                };
 
             orders.push(newOrder);
             saveOrders(orders);
 
             localStorage.removeItem("cart");
 
-            loadCart();
-            updateCartCounter();
-
             document.querySelector(".order-layout").style.display = "none";
+
+            // Generate Invoice
+            const invoiceDiv = document.getElementById("invoice-content");
+
+            let itemsHTML = "";
+
+            newOrder.items.forEach(item => {
+
+                let addonsText = "";
+
+                if (item.addons && item.addons.length > 0) {
+                    addonsText = " (" + item.addons.map(a => a.name).join(", ") + ")";
+                }
+
+                itemsHTML += `
+                    <p>
+                        ${item.quantity} x ${item.name}${addonsText}
+                        - $${(item.price * item.quantity).toFixed(2)}
+                    </p>
+                `;
+            });
+
+            invoiceDiv.innerHTML = `
+                <p><strong>Invoice Number:</strong> ${newOrder.invoice}</p>
+                <p><strong>Name:</strong> ${newOrder.customer.name}</p>
+                <p><strong>Phone:</strong> ${newOrder.customer.phone}</p>
+                <p><strong>Address:</strong> ${newOrder.customer.address}</p>
+                <hr>
+                ${itemsHTML}
+                <hr>
+                <p>Subtotal: $${newOrder.subtotal}</p>
+                <p>Tax (15%): $${newOrder.tax}</p>
+                <p><strong>Total Paid: $${newOrder.total}</strong></p>
+                <p><small>${newOrder.date}</small></p>
+            `;
+
             document.getElementById("success-message").style.display = "flex";
+
+            updateCartCounter();
+            loadCart();
         });
     }
 

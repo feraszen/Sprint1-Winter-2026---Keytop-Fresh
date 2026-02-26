@@ -66,11 +66,6 @@
 
                 <p><strong>Total: $<span id="total-price">0.00</span></strong></p>
 
-                <!-- Calculate Button -->
-                <button type="button" id="calculate-btn" class="calculate-btn">
-                    Calculate Total
-                </button>
-
                 <!-- Complete Order Button -->
                 <button type="submit" form="customerForm" class="checkout-btn">
                     Complete Order
@@ -139,10 +134,14 @@
             <h2>🎉Order Completed Successfully!</h2>
             <p>Thank you for choosing KeyTop Fresh.</p>
             <p>Your fresh juices are on the way!</p>
+            <p>Phone Number : +1 (709) 579-1061 .</p>
 
-            <button 
-                onclick="window.location.href='index.html'" 
-                class="checkout-btn">
+            <h2>Invoice</h2>
+
+            <div id="invoice-content"></div>
+
+            <button onclick="window.location.href='index.html'" 
+                    class="checkout-btn">
                 Back to Home
             </button>
         </div>
