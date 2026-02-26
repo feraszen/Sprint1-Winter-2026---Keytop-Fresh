@@ -16,16 +16,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const calculateBtn = document.getElementById("calculate-btn");
 
     // ===============================
-    // STORAGE
+    // STORAGE FUNCTIONS
     // ===============================
 
-    function getCart() {
-        return JSON.parse(localStorage.getItem("cart")) || [];
-    }
+    const getCart = () => JSON.parse(localStorage.getItem("cart")) || [];
+    const saveCart = (cart) => localStorage.setItem("cart", JSON.stringify(cart));
 
-    function saveCart(cart) {
-        localStorage.setItem("cart", JSON.stringify(cart));
-    }
+    const getOrders = () => JSON.parse(localStorage.getItem("orders")) || [];
+    const saveOrders = (orders) => localStorage.setItem("orders", JSON.stringify(orders));
 
     // ===============================
     // UPDATE CART COUNTER
@@ -40,9 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (animate) {
             cartCountElement.classList.add("cart-bounce");
-            setTimeout(() => {
-                cartCountElement.classList.remove("cart-bounce");
-            }, 400);
+            setTimeout(() => cartCountElement.classList.remove("cart-bounce"), 400);
         }
     }
 
@@ -65,85 +61,48 @@ document.addEventListener("DOMContentLoaded", () => {
         if (existingItem) {
             existingItem.quantity += 1;
         } else {
-            cart.push({
-                name,
-                price: finalPrice,
-                quantity: 1,
-                addons
-            });
+            cart.push({ name, price: finalPrice, quantity: 1, addons });
         }
 
         saveCart(cart);
         updateCartCounter(true);
-        showPopup(name + " added to cart!");
+        showPopup(`${name} added to cart!`);
     }
 
     // ===============================
-    // BUTTON EVENTS (ADD TO CART)
+    // ADD BUTTON EVENTS
     // ===============================
 
-    const addButtons = document.querySelectorAll(".add-to-cart");
-
-    addButtons.forEach(button => {
+    document.querySelectorAll(".add-to-cart").forEach(button => {
 
         button.addEventListener("click", () => {
 
             const name = button.dataset.name;
             const price = parseFloat(button.dataset.price);
 
+            if (!name || !price) return;
+
+            let addons = [];
+
             if (name === "Vanilla Dream") {
-
                 const sauce = prompt(
-                    "Choose sauce:\n1 - Chocolate Sauce (+$1)\n2 - Pistachio Sauce (+$2)\n0 - No Sauce"
+                    "Choose sauce:\n1 - Chocolate (+$1)\n2 - Pistachio (+$2)\n0 - None"
                 );
-
-                let addons = [];
-
                 if (sauce === "1") addons.push({ name: "Chocolate Sauce", price: 1 });
                 if (sauce === "2") addons.push({ name: "Pistachio Sauce", price: 2 });
-
-                addToCart(name, price, addons);
-                return;
             }
 
             if (name === "Tropical Mix") {
-
                 const extra = prompt(
                     "Add extras?\n1 - Whipped Cream (+$1)\n2 - Extra Fruits (+$2)\n0 - None"
                 );
-
-                let addons = [];
-
                 if (extra === "1") addons.push({ name: "Whipped Cream", price: 1 });
                 if (extra === "2") addons.push({ name: "Extra Fruits", price: 2 });
-
-                addToCart(name, price, addons);
-                return;
             }
 
-            addToCart(name, price);
+            addToCart(name, price, addons);
         });
     });
-
-    // ===============================
-    // IMAGE MAPPING
-    // ===============================
-
-    function getImageName(name) {
-
-        const images = {
-            "Orange Boost": "orange-juice.jpg",
-            "Mango Delight": "mango-juice.jpg",
-            "Strawberry Fresh": "Strawberry-juice.jpg",
-            "Watermelon Chill": "watermelon-juice.jpg",
-            "Strawberry Banana Milkshake": "milkshake-cocktail-juice.jpg",
-            "Kiwi Vital Smoothie": "kiwi-juice.jpg",
-            "Tropical Mix": "fruit-salad.jpg",
-            "Vanilla Dream": "ice-cream.jpg"
-        };
-
-        return images[name] || "orange-juice.jpg";
-    }
 
     // ===============================
     // LOAD CART
@@ -167,29 +126,11 @@ document.addEventListener("DOMContentLoaded", () => {
             const itemDiv = document.createElement("div");
             itemDiv.classList.add("cart-item");
 
-            let addonsHTML = "";
-
-            if (item.addons && item.addons.length > 0) {
-                addonsHTML = `
-                    <ul class="addon-list">
-                        ${item.addons.map(addon => `<li>+ ${addon.name}</li>`).join("")}
-                    </ul>
-                `;
-            }
-
             itemDiv.innerHTML = `
-                <div class="cart-left">
-                    <img src="images/${getImageName(item.name)}" alt="${item.name}">
-                </div>
-
                 <div class="cart-right">
                     <h4>${item.name}</h4>
-                    ${addonsHTML}
-                    <p class="item-price">$${item.price.toFixed(2)}</p>
-
-                    <input type="number" min="1" value="${item.quantity}" 
-                        data-index="${index}" class="quantity-input">
-
+                    <p>$${item.price.toFixed(2)}</p>
+                    <input type="number" min="1" value="${item.quantity}" data-index="${index}" class="quantity-input">
                     <button data-index="${index}" class="remove-btn">Remove</button>
                 </div>
             `;
@@ -201,10 +142,6 @@ document.addEventListener("DOMContentLoaded", () => {
         updateSummary();
     }
 
-    // ===============================
-    // CART EVENTS
-    // ===============================
-
     function attachCartEvents() {
 
         document.querySelectorAll(".quantity-input").forEach(input => {
@@ -213,10 +150,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const index = e.target.dataset.index;
                 let cart = getCart();
 
-                let newQuantity = parseInt(e.target.value);
-                if (newQuantity < 1) newQuantity = 1;
-
-                cart[index].quantity = newQuantity;
+                cart[index].quantity = Math.max(1, parseInt(e.target.value));
                 saveCart(cart);
 
                 updateCartCounter();
@@ -243,7 +177,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // UPDATE SUMMARY
     // ===============================
 
-    function updateSummary() {
+    function calculateTotals() {
 
         const cart = getCart();
 
@@ -255,9 +189,15 @@ document.addEventListener("DOMContentLoaded", () => {
             subtotal += item.price * item.quantity;
         });
 
-        const taxRate = 0.15;
-        const tax = subtotal * taxRate;
+        const tax = subtotal * 0.15;
         const total = subtotal + tax;
+
+        return { totalItems, subtotal, tax, total };
+    }
+
+    function updateSummary() {
+
+        const { totalItems, subtotal, tax, total } = calculateTotals();
 
         if (totalItemsElement) totalItemsElement.textContent = totalItems;
 
@@ -270,11 +210,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ===============================
-    // CALCULATE TOTAL BUTTON
+    // CALCULATE BUTTON
     // ===============================
 
     if (calculateBtn) {
-        calculateBtn.addEventListener("click", function () {
+        calculateBtn.addEventListener("click", () => {
 
             if (getCart().length === 0) {
                 showPopup("Your cart is empty.");
@@ -292,30 +232,43 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (customerForm) {
 
-        customerForm.addEventListener("submit", function (e) {
+        customerForm.addEventListener("submit", (e) => {
             e.preventDefault();
 
             const name = document.getElementById("name").value.trim();
             const phone = document.getElementById("phone").value.trim();
             const address = document.getElementById("address").value.trim();
+            const instructions = document.getElementById("instructions").value.trim();
 
             if (!name || !phone || !address) {
                 showPopup("Please fill in all required fields.");
                 return;
             }
 
+            const cart = getCart();
+            if (cart.length === 0) {
+                showPopup("Your cart is empty.");
+                return;
+            }
+
+            const totals = calculateTotals();
+            const orders = getOrders();
+
+            orders.push({
+                customer: { name, phone, address, instructions },
+                items: cart,
+                total: totals.total.toFixed(2),
+                date: new Date().toLocaleString()
+            });
+
+            saveOrders(orders);
             localStorage.removeItem("cart");
 
-            if (cartContainer) cartContainer.innerHTML = "";
-
+            loadCart();
             updateCartCounter();
-            updateSummary();
 
-            const orderLayout = document.querySelector(".order-layout");
-            if (orderLayout) orderLayout.style.display = "none";
-
-            const successMessage = document.getElementById("success-message");
-            if (successMessage) successMessage.style.display = "flex";
+            document.querySelector(".order-layout").style.display = "none";
+            document.getElementById("success-message").style.display = "flex";
         });
     }
 
@@ -331,9 +284,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         document.body.appendChild(popup);
 
-        setTimeout(() => {
-            popup.remove();
-        }, 2000);
+        setTimeout(() => popup.remove(), 2000);
     }
 
     // ===============================

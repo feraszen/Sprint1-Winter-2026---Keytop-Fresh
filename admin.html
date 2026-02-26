@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin | KeyTop Fresh</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        .admin-section {
+            padding: 4rem 0;
+        }
+
+        .order-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            margin-bottom: 2rem;
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .order-items ul {
+            margin-top: 1rem;
+            padding-left: 1.2rem;
+        }
+
+        .clear-orders {
+            background: #c62828;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            margin-bottom: 2rem;
+        }
+
+        .clear-orders:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="navbar">
+    <div class="container nav-wrapper">
+        <img src="images/logo-header.jpg" alt="KeyTop Fresh Logo" class="logo">
+
+        <nav>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="menu.html">Menu</a></li>
+                <li><a href="order.html">Order</a></li>
+                <li><a href="admin.html" class="active">Admin</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+
+<main class="container admin-section">
+
+    <h1>Customer Orders</h1>
+
+    <button class="clear-orders" onclick="clearOrders()">
+        Clear All Orders
+    </button>
+
+    <div id="orders-container"></div>
+
+</main>
+
+<footer class="footer">
+    <p>© 2026 KeyTop Fresh. Admin Panel</p>
+</footer>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const ordersContainer = document.getElementById("orders-container");
+    const orders = JSON.parse(localStorage.getItem("orders")) || [];
+
+    if (orders.length === 0) {
+        ordersContainer.innerHTML = "<p>No orders found.</p>";
+        return;
+    }
+
+    orders.forEach((order, index) => {
+
+        const orderDiv = document.createElement("div");
+        orderDiv.classList.add("order-card");
+
+        let itemsHTML = "";
+
+        order.items.forEach(item => {
+            itemsHTML += `
+                <li>
+                    ${item.name} × ${item.quantity} 
+                    ($${(item.price * item.quantity).toFixed(2)})
+                </li>
+            `;
+        });
+
+        orderDiv.innerHTML = `
+            <div class="order-header">
+                <strong>Order #${index + 1}</strong>
+                <span>${order.date}</span>
+            </div>
+
+            <p><strong>Name:</strong> ${order.customer.name}</p>
+            <p><strong>Phone:</strong> ${order.customer.phone}</p>
+            <p><strong>Address:</strong> ${order.customer.address}</p>
+            <p><strong>Instructions:</strong> ${order.customer.instructions || "None"}</p>
+
+            <div class="order-items">
+                <strong>Items:</strong>
+                <ul>${itemsHTML}</ul>
+            </div>
+
+            <p><strong>Total:</strong> $${order.total}</p>
+        `;
+
+        ordersContainer.appendChild(orderDiv);
+    });
+});
+
+function clearOrders() {
+    if (confirm("Are you sure you want to delete all orders?")) {
+        localStorage.removeItem("orders");
+        location.reload();
+    }
+}
+</script>
+
+</body>
+</html>
