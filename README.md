@@ -22,13 +22,13 @@ Users can browse products, add items to a cart, modify quantities, and complete 
 # Technical Implementation - Semantic HTML
 
 The project uses proper semantic elements including:
-- <header>
-- <nav>
-- <main>
-- <section>
-- <article>
-- <aside>
-- <footer>
+- header
+- nav
+- main
+- section
+- article
+- aside
+- footer
 
 # CSS & Responsive Design
 
